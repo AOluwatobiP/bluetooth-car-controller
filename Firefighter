@@ -1,577 +1,646 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Car Controller</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            color: white;
-        }
-        
-        .container {
-            max-width: 500px;
-            width: 100%;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .header h1 {
-            font-size: 2em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .status {
-            background: rgba(255,255,255,0.2);
-            padding: 15px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .status-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #ff4444;
-            margin-right: 8px;
-            animation: pulse 2s infinite;
-        }
-        
-        .status-indicator.connected {
-            background: #44ff44;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .connect-btn {
-            width: 100%;
-            padding: 15px;
-            font-size: 1.1em;
-            background: white;
-            color: #667eea;
-            border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-bottom: 30px;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        .connect-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        
-        .connect-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .controls {
-            background: rgba(255,255,255,0.15);
-            padding: 30px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-        }
-        
-        .speed-control {
-            margin-bottom: 30px;
-            text-align: center;
-        }
-        
-        .speed-label {
-            font-size: 1.1em;
-            font-weight: bold;
-            margin-bottom: 15px;
-            display: block;
-        }
-        
-        .speed-slider-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            justify-content: center;
-        }
-        
-        .speed-value {
-            font-size: 1.5em;
-            font-weight: bold;
-            min-width: 60px;
-            background: rgba(255,255,255,0.3);
-            padding: 10px;
-            border-radius: 10px;
-        }
-        
-        .speed-slider {
-            flex: 1;
-            max-width: 250px;
-            height: 8px;
-            border-radius: 5px;
-            background: rgba(255,255,255,0.3);
-            outline: none;
-            -webkit-appearance: none;
-        }
-        
-        .speed-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            background: white;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-        
-        .speed-slider::-moz-range-thumb {
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            background: white;
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-        
-        .d-pad {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            grid-template-rows: 1fr 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 30px;
-            max-width: 300px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .control-btn {
-            width: 80px;
-            height: 80px;
-            border: none;
-            border-radius: 15px;
-            font-size: 2em;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: rgba(255,255,255,0.9);
-            color: #667eea;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: none;
-        }
-        
-        .control-btn.active {
-            transform: scale(0.95);
-            background: rgba(255,255,255,1);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2), inset 0 0 20px rgba(102,126,234,0.3);
-        }
-        
-        .control-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-        
-        .up-btn { grid-column: 2; grid-row: 1; }
-        .left-btn { grid-column: 1; grid-row: 2; }
-        .stop-btn { 
-            grid-column: 2; 
-            grid-row: 2; 
-            background: #ff4444;
-            color: white;
-            font-size: 1.2em;
-        }
-        .stop-btn.active {
-            background: #ff6666;
-        }
-        .right-btn { grid-column: 3; grid-row: 2; }
-        .down-btn { grid-column: 2; grid-row: 3; }
-        
-        .info {
-            text-align: center;
-            font-size: 0.9em;
-            opacity: 0.9;
-            margin-top: 20px;
-            line-height: 1.6;
-        }
-        
-        .command-log {
-            background: rgba(0,0,0,0.3);
-            padding: 10px;
-            border-radius: 10px;
-            margin-top: 20px;
-            max-height: 100px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 0.85em;
-        }
-        
-        .command-log div {
-            padding: 2px 0;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Fire Fighting Car</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow: hidden;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 30px;
+      padding: 30px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    h1 {
+      color: #667eea;
+      font-size: 28px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #666;
+      margin-top: 10px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #e74c3c;
+      animation: pulse 2s infinite;
+    }
+
+    .status-dot.connected {
+      background: #2ecc71;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .fire-alert {
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      color: white;
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      text-align: center;
+      display: none;
+      animation: fireAlert 0.5s infinite alternate;
+    }
+
+    .fire-alert.active {
+      display: block;
+    }
+
+    @keyframes fireAlert {
+      from { transform: scale(1); box-shadow: 0 5px 20px rgba(231, 76, 60, 0.5); }
+      to { transform: scale(1.02); box-shadow: 0 8px 30px rgba(231, 76, 60, 0.8); }
+    }
+
+    .fire-alert h2 {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
+    .fire-alert p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .connect-btn {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 15px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 20px;
+      transition: transform 0.2s;
+    }
+
+    .connect-btn:active {
+      transform: scale(0.98);
+    }
+
+    .connect-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .speed-control {
+      background: rgba(102, 126, 234, 0.1);
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 25px;
+    }
+
+    .speed-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .speed-slider {
+      width: 100%;
+      height: 8px;
+      border-radius: 5px;
+      outline: none;
+      background: linear-gradient(to right, #e74c3c 0%, #f39c12 50%, #2ecc71 100%);
+      -webkit-appearance: none;
+    }
+
+    .speed-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: white;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .speed-slider::-moz-range-thumb {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: white;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      border: none;
+    }
+
+    .controller {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 25px;
+      max-width: 350px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .control-btn {
+      aspect-ratio: 1;
+      border: none;
+      border-radius: 20px;
+      font-size: 32px;
+      cursor: pointer;
+      transition: all 0.1s;
+      background: linear-gradient(145deg, #f0f0f0, #cacaca);
+      box-shadow: 5px 5px 10px #bebebe, -5px -5px 10px #ffffff;
+      user-select: none;
+      touch-action: manipulation;
+    }
+
+    .control-btn:active {
+      box-shadow: inset 5px 5px 10px #bebebe, inset -5px -5px 10px #ffffff;
+      transform: scale(0.95);
+    }
+
+    .control-btn.pressed {
+      background: linear-gradient(145deg, #667eea, #764ba2);
+      box-shadow: inset 5px 5px 10px rgba(0,0,0,0.2), inset -5px -5px 10px rgba(255,255,255,0.1);
+      color: white;
+    }
+
+    .control-btn.stop-btn {
+      background: linear-gradient(145deg, #e74c3c, #c0392b);
+      color: white;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .control-btn.stop-btn:active {
+      box-shadow: inset 5px 5px 10px rgba(0,0,0,0.3), inset -5px -5px 10px rgba(255,255,255,0.1);
+    }
+
+    .empty {
+      background: transparent;
+      box-shadow: none;
+      pointer-events: none;
+    }
+
+    .info-panel {
+      background: rgba(102, 126, 234, 0.1);
+      border-radius: 15px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-label {
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .info-value {
+      color: #666;
+    }
+
+    .log {
+      background: #f8f9fa;
+      border-radius: 15px;
+      padding: 15px;
+      max-height: 150px;
+      overflow-y: auto;
+      font-size: 12px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .log-entry {
+      padding: 5px 0;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .log-entry.fire {
+      color: #e74c3c;
+      font-weight: bold;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 24px;
+      }
+      
+      .controller {
+        gap: 10px;
+      }
+      
+      .control-btn {
+        font-size: 28px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🚗 Car Controller</h1>
-        </div>
-        
-        <div class="status">
-            <span class="status-indicator" id="statusIndicator"></span>
-            <span id="statusText">Disconnected</span>
-        </div>
-        
-        <button class="connect-btn" id="connectBtn" onclick="connectBluetooth()">
-            Connect to HC-06
-        </button>
-        
-        <div class="controls">
-            <div class="speed-control">
-                <label class="speed-label">Speed Control</label>
-                <div class="speed-slider-container">
-                    <span style="font-size: 1.2em;">🐢</span>
-                    <input type="range" min="0" max="255" value="255" class="speed-slider" id="speedSlider">
-                    <span style="font-size: 1.2em;">🚀</span>
-                </div>
-                <div class="speed-value" id="speedValue">255</div>
-            </div>
-            
-            <div class="d-pad">
-                <button class="control-btn up-btn" id="upBtn" disabled>⬆️</button>
-                <button class="control-btn left-btn" id="leftBtn" disabled>⬅️</button>
-                <button class="control-btn stop-btn" id="stopBtn" disabled>STOP</button>
-                <button class="control-btn right-btn" id="rightBtn" disabled>➡️</button>
-                <button class="control-btn down-btn" id="downBtn" disabled>⬇️</button>
-            </div>
-            
-            <div class="info">
-                <strong>🖐️ HOLD buttons to move</strong><br>
-                Release to stop automatically<br>
-                Adjust speed with slider above
-            </div>
-            
-            <div class="command-log" id="commandLog"></div>
-        </div>
+  <div class="container">
+    <div class="header">
+      <h1>🚒 Fire Fighting Car</h1>
+      <div class="status">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Disconnected</span>
+      </div>
     </div>
-    
-    <script>
-        let bluetoothDevice;
-        let characteristic;
-        let isConnected = false;
-        let currentSpeed = 255;
-        let activeButton = null;
-        let commandInterval = null;
+
+    <div class="fire-alert" id="fireAlert">
+      <h2>🔥 FIRE DETECTED!</h2>
+      <p>Relay & Buzzer Activated • Extinguishing...</p>
+    </div>
+
+    <button class="connect-btn" id="connectBtn">Connect to HC-06</button>
+
+    <div class="info-panel">
+      <div class="info-row">
+        <span class="info-label">🔍 Servo Status:</span>
+        <span class="info-value" id="servoStatus">Scanning 60°-120°</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">💨 Fan Control:</span>
+        <span class="info-value">Relay (Pin 12)</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">🔊 Buzzer:</span>
+        <span class="info-value">Pin 2</span>
+      </div>
+    </div>
+
+    <div class="speed-control">
+      <div class="speed-label">
+        <span>🚗 Speed Control</span>
+        <span id="speedValue">3</span>
+      </div>
+      <input type="range" class="speed-slider" id="speedSlider" min="0" max="9" value="3">
+    </div>
+
+    <div class="controller">
+      <div class="empty"></div>
+      <button class="control-btn" id="forwardBtn">⬆️</button>
+      <div class="empty"></div>
+      
+      <button class="control-btn" id="leftBtn">⬅️</button>
+      <button class="control-btn stop-btn" id="stopBtn">STOP</button>
+      <button class="control-btn" id="rightBtn">➡️</button>
+      
+      <div class="empty"></div>
+      <button class="control-btn" id="backwardBtn">⬇️</button>
+      <div class="empty"></div>
+    </div>
+
+    <div class="log" id="log">
+      <div class="log-entry">💡 Press Connect to start</div>
+      <div class="log-entry">🔍 Servo scans 60°-120° (slower & smoother)</div>
+      <div class="log-entry">⚡ Relay controls fan motor</div>
+    </div>
+  </div>
+
+  <script>
+    let bluetoothDevice = null;
+    let characteristic = null;
+    let isConnected = false;
+    let activeButton = null;
+    let isSending = false;  // Prevent overlapping sends
+    let commandQueue = [];  // Queue for commands
+
+    const connectBtn = document.getElementById('connectBtn');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const speedSlider = document.getElementById('speedSlider');
+    const speedValue = document.getElementById('speedValue');
+    const logDiv = document.getElementById('log');
+    const fireAlert = document.getElementById('fireAlert');
+    const servoStatus = document.getElementById('servoStatus');
+
+    const buttons = {
+      forward: document.getElementById('forwardBtn'),
+      backward: document.getElementById('backwardBtn'),
+      left: document.getElementById('leftBtn'),
+      right: document.getElementById('rightBtn'),
+      stop: document.getElementById('stopBtn')
+    };
+
+    // Log function
+    function log(message, isFire = false) {
+      const entry = document.createElement('div');
+      entry.className = 'log-entry' + (isFire ? ' fire' : '');
+      entry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+      logDiv.insertBefore(entry, logDiv.firstChild);
+      if (logDiv.children.length > 20) {
+        logDiv.removeChild(logDiv.lastChild);
+      }
+    }
+
+    // Update status
+    function updateStatus(connected) {
+      isConnected = connected;
+      if (connected) {
+        statusDot.classList.add('connected');
+        statusText.textContent = 'Connected - Scanning';
+        connectBtn.textContent = 'Disconnect';
+        connectBtn.disabled = false;
+      } else {
+        statusDot.classList.remove('connected');
+        statusText.textContent = 'Disconnected';
+        connectBtn.textContent = 'Connect to HC-06';
+        connectBtn.disabled = false;
+      }
+    }
+
+    // Send command with queue system
+    async function sendCommand(command) {
+      if (!isConnected || !characteristic) {
+        log('❌ Not connected');
+        return;
+      }
+
+      // Add to queue
+      commandQueue.push(command);
+      
+      // Process queue if not already sending
+      if (!isSending) {
+        processQueue();
+      }
+    }
+
+    // Process command queue
+    async function processQueue() {
+      if (commandQueue.length === 0) {
+        isSending = false;
+        return;
+      }
+
+      isSending = true;
+      const command = commandQueue.shift();
+
+      try {
+        const encoder = new TextEncoder();
+        await characteristic.writeValue(encoder.encode(command));
+        await new Promise(resolve => setTimeout(resolve, 50)); // 50ms delay between commands
+      } catch (error) {
+        log(`❌ Error: ${error.message}`);
+      }
+
+      // Process next command
+      processQueue();
+    }
+
+    // Parse Arduino messages
+    function parseArduinoMessage(message) {
+      if (message.includes('FIRE_DETECTED')) {
+        fireAlert.classList.add('active');
+        servoStatus.textContent = '🔥 Fire Located!';
+        log('🔥 FIRE DETECTED! Relay ON, Buzzer ON', true);
         
-        // Speed control
-        const speedSlider = document.getElementById('speedSlider');
-        const speedValue = document.getElementById('speedValue');
-        
-        speedSlider.addEventListener('input', (e) => {
-            currentSpeed = e.target.value;
-            speedValue.textContent = currentSpeed;
+        // Vibrate if supported
+        if (navigator.vibrate) {
+          navigator.vibrate([200, 100, 200, 100, 200]);
+        }
+      } else if (message.includes('FIRE_CLEARED')) {
+        fireAlert.classList.remove('active');
+        servoStatus.textContent = 'Scanning 60°-120°';
+        log('✅ Fire cleared. Relay OFF, Buzzer OFF', true);
+      } else if (message.includes('Angle:')) {
+        const angle = message.split(':')[1].trim();
+        log(`📍 Fire detected at ${angle}°`);
+      } else if (message.includes('Relay ON')) {
+        log('⚡ Relay activated - Fan running');
+      } else if (message.includes('Buzzer ON')) {
+        log('🔊 Buzzer alarm activated');
+      }
+    }
+
+    // Speed slider with debounce
+    let speedTimeout = null;
+    speedSlider.addEventListener('input', (e) => {
+      const speed = e.target.value;
+      speedValue.textContent = speed;
+      
+      // Debounce - only send after user stops moving slider
+      clearTimeout(speedTimeout);
+      speedTimeout = setTimeout(() => {
+        sendCommand(speed);
+        log(`🚗 Speed set to: ${speed}`);
+      }, 200);  // Wait 200ms after user stops sliding
+    });
+
+    // Connect button
+    connectBtn.addEventListener('click', async () => {
+      if (isConnected) {
+        if (bluetoothDevice && bluetoothDevice.gatt.connected) {
+          bluetoothDevice.gatt.disconnect();
+        }
+        updateStatus(false);
+        log('🔌 Disconnected');
+        return;
+      }
+
+      try {
+        connectBtn.disabled = true;
+        connectBtn.textContent = 'Connecting...';
+        log('🔍 Searching for HC-06...');
+
+        bluetoothDevice = await navigator.bluetooth.requestDevice({
+          filters: [{ namePrefix: 'HC-' }],
+          optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb']
         });
-        
-        speedSlider.addEventListener('change', (e) => {
-            currentSpeed = e.target.value;
-            sendSpeedCommand(currentSpeed);
+
+        log('📡 Connecting...');
+        const server = await bluetoothDevice.gatt.connect();
+        const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
+        characteristic = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
+
+        // Listen for Arduino messages
+        await characteristic.startNotifications();
+        characteristic.addEventListener('characteristicvaluechanged', (event) => {
+          const value = new TextDecoder().decode(event.target.value);
+          parseArduinoMessage(value);
         });
-        
-        async function connectBluetooth() {
-            try {
-                const connectBtn = document.getElementById('connectBtn');
-                connectBtn.disabled = true;
-                connectBtn.textContent = 'Connecting...';
-                
-                bluetoothDevice = await navigator.bluetooth.requestDevice({
-                    filters: [
-                        { name: 'HC-06' },
-                        { namePrefix: 'HC-' }
-                    ],
-                    optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb']
-                });
-                
-                const server = await bluetoothDevice.gatt.connect();
-                const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
-                characteristic = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
-                
-                isConnected = true;
-                updateConnectionStatus(true);
-                enableControls(true);
-                setupButtonListeners();
-                logCommand('Connected to HC-06!');
-                
-                connectBtn.textContent = 'Disconnect';
-                connectBtn.disabled = false;
-                connectBtn.onclick = disconnectBluetooth;
-                
-            } catch (error) {
-                console.error('Connection failed:', error);
-                logCommand('Connection failed: ' + error.message);
-                document.getElementById('connectBtn').disabled = false;
-                document.getElementById('connectBtn').textContent = 'Connect to HC-06';
-                alert('Connection failed! Make sure:\n1. Bluetooth is enabled\n2. HC-06 is powered on\n3. Device is paired (PIN: 123456)');
-            }
-        }
-        
-        function disconnectBluetooth() {
-            if (bluetoothDevice && bluetoothDevice.gatt.connected) {
-                bluetoothDevice.gatt.disconnect();
-            }
-            stopMovement();
-            isConnected = false;
-            updateConnectionStatus(false);
-            enableControls(false);
-            
-            const connectBtn = document.getElementById('connectBtn');
-            connectBtn.textContent = 'Connect to HC-06';
-            connectBtn.onclick = connectBluetooth;
-            logCommand('Disconnected');
-        }
-        
-        function updateConnectionStatus(connected) {
-            const indicator = document.getElementById('statusIndicator');
-            const statusText = document.getElementById('statusText');
-            
-            if (connected) {
-                indicator.classList.add('connected');
-                statusText.textContent = 'Connected to HC-06';
-            } else {
-                indicator.classList.remove('connected');
-                statusText.textContent = 'Disconnected';
-            }
-        }
-        
-        function enableControls(enabled) {
-            const buttons = ['upBtn', 'downBtn', 'leftBtn', 'rightBtn', 'stopBtn'];
-            buttons.forEach(id => {
-                document.getElementById(id).disabled = !enabled;
-            });
-        }
-        
-        function setupButtonListeners() {
-            const buttons = [
-                { id: 'upBtn', command: 'U', name: 'Forward' },
-                { id: 'downBtn', command: 'D', name: 'Backward' },
-                { id: 'leftBtn', command: 'L', name: 'Left' },
-                { id: 'rightBtn', command: 'R', name: 'Right' },
-                { id: 'stopBtn', command: 'S', name: 'Stop' }
-            ];
-            
-            buttons.forEach(btn => {
-                const element = document.getElementById(btn.id);
-                
-                // Touch events for mobile
-                element.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    startMovement(btn.command, btn.name, element);
-                });
-                
-                element.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    stopMovement();
-                });
-                
-                element.addEventListener('touchcancel', (e) => {
-                    e.preventDefault();
-                    stopMovement();
-                });
-                
-                // Mouse events for desktop
-                element.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
-                    startMovement(btn.command, btn.name, element);
-                });
-                
-                element.addEventListener('mouseup', (e) => {
-                    e.preventDefault();
-                    stopMovement();
-                });
-                
-                element.addEventListener('mouseleave', (e) => {
-                    if (activeButton === element) {
-                        stopMovement();
-                    }
-                });
-            });
-        }
-        
-        function startMovement(command, name, buttonElement) {
-            if (!isConnected || activeButton) return;
-            
-            activeButton = buttonElement;
-            buttonElement.classList.add('active');
-            
-            // Send command immediately
-            sendCommand(command, name);
-            
-            // Continue sending command every 100ms while held
-            commandInterval = setInterval(() => {
-                sendCommand(command, name);
-            }, 100);
-        }
-        
-        function stopMovement() {
-            if (commandInterval) {
-                clearInterval(commandInterval);
-                commandInterval = null;
-            }
-            
-            if (activeButton) {
-                activeButton.classList.remove('active');
-                activeButton = null;
-            }
-            
-            // Send stop command
-            sendCommand('S', 'Stop');
-        }
-        
-        async function sendCommand(command, name) {
-            if (!isConnected || !characteristic) return;
-            
-            try {
-                const encoder = new TextEncoder();
-                await characteristic.writeValue(encoder.encode(command));
-                
-                // Only log start and stop, not continuous commands
-                if (command === 'S' || !commandInterval) {
-                    logCommand(`${getCommandEmoji(command)} ${name}`);
-                }
-            } catch (error) {
-                console.error('Send failed:', error);
-                logCommand('Error: ' + error.message);
-            }
-        }
-        
-        async function sendSpeedCommand(speed) {
-            if (!isConnected || !characteristic) return;
-            
-            try {
-                const encoder = new TextEncoder();
-                const command = `SPEED:${speed}\n`;
-                await characteristic.writeValue(encoder.encode(command));
-                logCommand(`🚀 Speed set to: ${speed}`);
-            } catch (error) {
-                console.error('Speed send failed:', error);
-            }
-        }
-        
-        function getCommandEmoji(command) {
-            const emojis = {
-                'U': '⬆️',
-                'D': '⬇️',
-                'L': '⬅️',
-                'R': '➡️',
-                'S': '🛑'
-            };
-            return emojis[command] || command;
-        }
-        
-        function logCommand(message) {
-            const log = document.getElementById('commandLog');
-            const entry = document.createElement('div');
-            const time = new Date().toLocaleTimeString();
-            entry.textContent = `[${time}] ${message}`;
-            log.insertBefore(entry, log.firstChild);
-            
-            while (log.children.length > 10) {
-                log.removeChild(log.lastChild);
-            }
-        }
-        
-        // Keyboard controls with hold functionality
-        let keyHeld = {};
-        
-        document.addEventListener('keydown', (e) => {
-            if (!isConnected || keyHeld[e.key]) return;
-            
-            let command = null;
-            let name = null;
-            let buttonId = null;
-            
-            switch(e.key) {
-                case 'ArrowUp':
-                case 'w':
-                case 'W':
-                    command = 'U';
-                    name = 'Forward';
-                    buttonId = 'upBtn';
-                    break;
-                case 'ArrowDown':
-                case 's':
-                case 'S':
-                    command = 'D';
-                    name = 'Backward';
-                    buttonId = 'downBtn';
-                    break;
-                case 'ArrowLeft':
-                case 'a':
-                case 'A':
-                    command = 'L';
-                    name = 'Left';
-                    buttonId = 'leftBtn';
-                    break;
-                case 'ArrowRight':
-                case 'd':
-                case 'D':
-                    command = 'R';
-                    name = 'Right';
-                    buttonId = 'rightBtn';
-                    break;
-                case ' ':
-                    command = 'S';
-                    name = 'Stop';
-                    buttonId = 'stopBtn';
-                    e.preventDefault();
-                    break;
-            }
-            
-            if (command && buttonId) {
-                keyHeld[e.key] = true;
-                const button = document.getElementById(buttonId);
-                startMovement(command, name, button);
-                e.preventDefault();
-            }
+
+        updateStatus(true);
+        log('✅ Connected! Servo scanning...');
+
+        // Set initial speed
+        sendCommand(speedSlider.value);
+
+        bluetoothDevice.addEventListener('gattserverdisconnected', () => {
+          updateStatus(false);
+          fireAlert.classList.remove('active');
+          servoStatus.textContent = 'Scanning 60°-120°';
+          log('🔌 Device disconnected');
         });
+      } catch (error) {
+        log(`❌ Connection failed: ${error.message}`);
+        updateStatus(false);
+      }
+    });
+
+    // Button handlers with press-and-hold (throttled)
+    function setupButton(btn, command, label) {
+      let pressTimeout = null;
+      let isPressed = false;
+
+      const startCommand = () => {
+        if (!isConnected || isPressed) return;
+        isPressed = true;
+        btn.classList.add('pressed');
+        sendCommand(command);
+        log(`▶️ ${label}`);
+        activeButton = command;
+      };
+
+      const stopCommand = () => {
+        if (!isConnected || !isPressed) return;
+        isPressed = false;
+        btn.classList.remove('pressed');
         
-        document.addEventListener('keyup', (e) => {
-            if (keyHeld[e.key]) {
-                keyHeld[e.key] = false;
-                stopMovement();
-            }
-        });
+        // Debounce stop command
+        clearTimeout(pressTimeout);
+        pressTimeout = setTimeout(() => {
+          sendCommand('S');
+          if (activeButton === command) {
+            log(`⏹️ Stopped`);
+            activeButton = null;
+          }
+        }, 100);
+      };
+
+      // Touch events
+      btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        startCommand();
+      });
+
+      btn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        stopCommand();
+      });
+
+      // Mouse events
+      btn.addEventListener('mousedown', startCommand);
+      btn.addEventListener('mouseup', stopCommand);
+      btn.addEventListener('mouseleave', stopCommand);
+    }
+
+    setupButton(buttons.forward, 'U', 'Forward');
+    setupButton(buttons.backward, 'D', 'Backward');
+    setupButton(buttons.left, 'L', 'Left');
+    setupButton(buttons.right, 'R', 'Right');
+
+    // Stop button - immediate stop
+    buttons.stop.addEventListener('click', () => {
+      buttons.stop.classList.add('pressed');
+      sendCommand('S');
+      log('🛑 Emergency Stop');
+      setTimeout(() => buttons.stop.classList.remove('pressed'), 200);
+      activeButton = null;
+    });
+
+    // Keyboard support with debounce
+    const keyMap = {
+      'ArrowUp': 'U',
+      'ArrowDown': 'D',
+      'ArrowLeft': 'L',
+      'ArrowRight': 'R',
+      'w': 'U',
+      's': 'D',
+      'a': 'L',
+      'd': 'R',
+      ' ': 'S'
+    };
+
+    let activeKeys = new Set();
+    let keyTimeout = null;
+
+    document.addEventListener('keydown', (e) => {
+      if (!isConnected || activeKeys.has(e.key)) return;
+      
+      const command = keyMap[e.key];
+      if (command) {
+        e.preventDefault();
+        activeKeys.add(e.key);
+        sendCommand(command);
         
-        // Prevent context menu on long press
-        document.addEventListener('contextmenu', (e) => {
-            if (e.target.classList.contains('control-btn')) {
-                e.preventDefault();
-            }
-        });
-    </script>
+        if (command !== 'S') {
+          log(`⌨️ ${e.key.toUpperCase()}`);
+        }
+      }
+    });
+
+    document.addEventListener('keyup', (e) => {
+      if (!isConnected) return;
+      
+      const command = keyMap[e.key];
+      if (command && command !== 'S') {
+        e.preventDefault();
+        activeKeys.delete(e.key);
+        
+        // Debounce keyup
+        clearTimeout(keyTimeout);
+        keyTimeout = setTimeout(() => {
+          sendCommand('S');
+          log('⏹️ Stopped');
+        }, 100);
+      }
+    });
+  </script>
 </body>
 </html>
